@@ -19,25 +19,24 @@ class ViewController: UIViewController
     {
         super.viewDidLoad()
         
-        view.multipleTouchEnabled = true
+        view.isMultipleTouchEnabled = true
         
         label.text = "lay your plums on me."
         
-        label.textAlignment = NSTextAlignment.Center
+        label.textAlignment = NSTextAlignment.center
         
         view.addSubview(label)
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?)
-    {
-        label.hidden = true
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        label.isHidden = true
         
-        for touch in touches
-        {
+        for touch in touches {
             let circle = CircleWithLabel()
             
-            circle.drawAtPoint(touch.locationInView(view),
-                force: touch.force / touch.maximumPossibleForce)
+            circle.drawAtPoint(location: touch.location(in: view),
+                               force: touch.force / touch.maximumPossibleForce)
             
             circles[touch] = circle
             view.layer.addSublayer(circle)
@@ -46,71 +45,60 @@ class ViewController: UIViewController
         highlightHeaviest()
     }
     
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?)
-    {
-        for touch in touches where circles[touch] != nil
-        {
+
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        for touch in touches where circles[touch] != nil {
             let circle = circles[touch]!
             
-            circle.drawAtPoint(touch.locationInView(view),
-                force: touch.force / touch.maximumPossibleForce)
+            circle.drawAtPoint(location: touch.location(in: view),
+                               force: touch.force / touch.maximumPossibleForce)
         }
         
         highlightHeaviest()
     }
     
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?)
-    {
-        for touch in touches where circles[touch] != nil
-        {
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        for touch in touches where circles[touch] != nil {
             let circle = circles[touch]!
             
-            circles.removeValueForKey(touch)
+            circles.removeValue(forKey: touch)
+
             circle.removeFromSuperlayer()
         }
         
         highlightHeaviest()
     }
     
-    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?)
-    {
-        guard let touches = touches else
-        {
-            return
-        }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-        for touch in touches where circles[touch] != nil
-        {
+        for touch in touches where circles[touch] != nil {
             let circle = circles[touch]!
             
             circle.removeFromSuperlayer()
         }
     }
     
-    func highlightHeaviest()
-    {
-        func getMaxTouch() -> UITouch?
-        {
-            return circles.sort({
+    func highlightHeaviest() {
+        func getMaxTouch() -> UITouch? {
+            return circles.sorted(by: {
                 (a: (UITouch, CircleWithLabel), b: (UITouch, CircleWithLabel)) -> Bool in
                 
                 return a.0.force > b.0.force
             }).first?.0
         }
         
-        circles.forEach
-        {
+        circles.forEach {
             $0.1.isMax = $0.0 == getMaxTouch()
         }
     }
     
-    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask
-    {
-        return UIInterfaceOrientationMask.Landscape
+    func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
+        return UIInterfaceOrientationMask.landscape
     }
     
-    override func viewDidLayoutSubviews()
-    {
+    override func viewDidLayoutSubviews() {
         label.frame = view.bounds
     }
 }
@@ -125,16 +113,16 @@ class CircleWithLabel: CAShapeLayer
     {
         super.init()
         
-        text.foregroundColor = UIColor.blueColor().CGColor
-        text.alignmentMode = kCAAlignmentCenter
+        text.foregroundColor = UIColor.blue.cgColor
+        text.alignmentMode = CATextLayerAlignmentMode.center
         addSublayer(text)
         
-        strokeColor = UIColor.blueColor().CGColor
+        strokeColor = UIColor.blue.cgColor
         lineWidth = 5
         fillColor = nil
     }
     
-    override init(layer: AnyObject)
+    override init(layer: Any)
     {
         super.init(layer: layer)
     }
@@ -148,7 +136,7 @@ class CircleWithLabel: CAShapeLayer
     {
         didSet
         {
-            fillColor = isMax ? UIColor.yellowColor().CGColor : nil
+            fillColor = isMax ? UIColor.yellow.cgColor : nil
         }
     }
     
@@ -157,9 +145,9 @@ class CircleWithLabel: CAShapeLayer
         let radius = 120 + (force * 120)
         
         path = UIBezierPath(
-            ovalInRect: CGRect(
+            ovalIn: CGRect(
                 origin: location.offset(dx: radius, dy: radius),
-                size: CGSize(width: radius * 2, height: radius * 2))).CGPath
+                size: CGSize(width: radius * 2, height: radius * 2))).cgPath
         
         text.string = String(format: "%.1f%%", force * 100)
         
@@ -171,7 +159,7 @@ class CircleWithLabel: CAShapeLayer
 
 extension CGPoint
 {
-    func offset(dx dx: CGFloat, dy: CGFloat) -> CGPoint
+    func offset(dx: CGFloat, dy: CGFloat) -> CGPoint
     {
         return CGPoint(x: self.x - dx, y: self.y - dy)
     }
